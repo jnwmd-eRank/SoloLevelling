@@ -506,8 +506,8 @@ class _TimetableScreenState extends State<TimetableScreen> {
 
           // Agenda items
           if (selectedDayItems.isEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
               child: Text(
                 'No schedule blocks on this day.',
                 style: TextStyle(color: SystemTheme.textMuted),
@@ -740,6 +740,11 @@ class _TimetableScreenState extends State<TimetableScreen> {
         ? DateFormat('yyyy-MM-dd').parse(existingItem.date)
         : _selectedDate;
 
+    // Recurring state for new items
+    bool isRecurring = false;
+    // 1 = Mon, ..., 7 = Sun
+    final Set<int> selectedDays = {chosenDate.weekday};
+
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
@@ -794,7 +799,13 @@ class _TimetableScreenState extends State<TimetableScreen> {
                       },
                     );
                     if (picked != null) {
-                      setModalState(() => chosenDate = picked);
+                      setModalState(() {
+                        chosenDate = picked;
+                        if (!isRecurring) {
+                          selectedDays.clear();
+                          selectedDays.add(picked.weekday);
+                        }
+                      });
                     }
                   },
                   child: Container(
@@ -887,6 +898,121 @@ class _TimetableScreenState extends State<TimetableScreen> {
                     if (val != null) setModalState(() => category = val);
                   },
                 ),
+
+                // Recurring options (Only for new items)
+                if (existingItem == null) ...[
+                  const SizedBox(height: 14),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: SystemTheme.surfaceElevated,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: isRecurring
+                            ? SystemTheme.primaryCyan.withValues(alpha: 0.5)
+                            : SystemTheme.border,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: const [
+                                Icon(Icons.repeat,
+                                    color: SystemTheme.primaryCyan, size: 18),
+                                SizedBox(width: 8),
+                                Text(
+                                  'RECURRING BLOCK',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Switch(
+                              value: isRecurring,
+                              activeTrackColor: SystemTheme.primaryCyan,
+                              onChanged: (val) =>
+                                  setModalState(() => isRecurring = val),
+                            ),
+                          ],
+                        ),
+                        if (isRecurring) ...[
+                          const SizedBox(height: 6),
+                          const Text(
+                            'Repeat weekly on (Mon - Sun):',
+                            style: TextStyle(
+                              color: SystemTheme.textMuted,
+                              fontSize: 11,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              _buildDayChip('M', 1, selectedDays, (d) {
+                                setModalState(() {
+                                  selectedDays.contains(d)
+                                      ? selectedDays.remove(d)
+                                      : selectedDays.add(d);
+                                });
+                              }),
+                              _buildDayChip('T', 2, selectedDays, (d) {
+                                setModalState(() {
+                                  selectedDays.contains(d)
+                                      ? selectedDays.remove(d)
+                                      : selectedDays.add(d);
+                                });
+                              }),
+                              _buildDayChip('W', 3, selectedDays, (d) {
+                                setModalState(() {
+                                  selectedDays.contains(d)
+                                      ? selectedDays.remove(d)
+                                      : selectedDays.add(d);
+                                });
+                              }),
+                              _buildDayChip('T', 4, selectedDays, (d) {
+                                setModalState(() {
+                                  selectedDays.contains(d)
+                                      ? selectedDays.remove(d)
+                                      : selectedDays.add(d);
+                                });
+                              }),
+                              _buildDayChip('F', 5, selectedDays, (d) {
+                                setModalState(() {
+                                  selectedDays.contains(d)
+                                      ? selectedDays.remove(d)
+                                      : selectedDays.add(d);
+                                });
+                              }),
+                              _buildDayChip('S', 6, selectedDays, (d) {
+                                setModalState(() {
+                                  selectedDays.contains(d)
+                                      ? selectedDays.remove(d)
+                                      : selectedDays.add(d);
+                                });
+                              }),
+                              _buildDayChip('S', 7, selectedDays, (d) {
+                                setModalState(() {
+                                  selectedDays.contains(d)
+                                      ? selectedDays.remove(d)
+                                      : selectedDays.add(d);
+                                });
+                              }),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -901,14 +1027,14 @@ class _TimetableScreenState extends State<TimetableScreen> {
                 backgroundColor: SystemTheme.primaryCyan,
                 foregroundColor: Colors.black,
               ),
-              onPressed: () {
+              onPressed: () async {
                 if (titleController.text.trim().isEmpty) return;
                 final hunter = context.read<HunterProvider>();
                 final chosenDateStr =
                     DateFormat('yyyy-MM-dd').format(chosenDate);
 
                 if (existingItem != null) {
-                  // Edit existing
+                  // Edit existing item
                   final updated = existingItem.copyWith(
                     date: chosenDateStr,
                     time: timeController.text.trim(),
@@ -918,8 +1044,107 @@ class _TimetableScreenState extends State<TimetableScreen> {
                     category: category,
                   );
                   hunter.updateScheduleItem(updated);
+                  setState(() {
+                    _selectedDate = chosenDate;
+                  });
+                  Navigator.pop(ctx);
+                } else if (isRecurring && selectedDays.isNotEmpty) {
+                  // Prompt confirmation for recurring instances
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (confirmCtx) => AlertDialog(
+                      backgroundColor: SystemTheme.surfaceElevated,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: const BorderSide(
+                            color: SystemTheme.rankGold, width: 1.5),
+                      ),
+                      title: const Row(
+                        children: [
+                          Icon(Icons.info_outline,
+                              color: SystemTheme.rankGold, size: 22),
+                          SizedBox(width: 8),
+                          Text(
+                            'RECURRING SCHEDULE',
+                            style: TextStyle(
+                              color: SystemTheme.rankGold,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                              letterSpacing: 1.0,
+                            ),
+                          ),
+                        ],
+                      ),
+                      content: const Text(
+                        'Recurring instances are only created for the current year.',
+                        style: TextStyle(color: Colors.white, fontSize: 13),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(confirmCtx, false),
+                          child: const Text('CANCEL',
+                              style: TextStyle(color: SystemTheme.textMuted)),
+                        ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: SystemTheme.primaryCyan,
+                            foregroundColor: Colors.black,
+                          ),
+                          onPressed: () => Navigator.pop(confirmCtx, true),
+                          child: const Text('CONTINUE',
+                              style: TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                      ],
+                    ),
+                  );
+
+                  if (confirm == true) {
+                    // Generate recurring instances up to Dec 31 of current year
+                    final endDate = DateTime(chosenDate.year, 12, 31);
+                    DateTime curr = chosenDate;
+                    final List<ScheduleItem> recurringItems = [];
+
+                    while (!curr.isAfter(endDate)) {
+                      if (selectedDays.contains(curr.weekday)) {
+                        recurringItems.add(
+                          ScheduleItem(
+                            id: const Uuid().v4(),
+                            date: DateFormat('yyyy-MM-dd').format(curr),
+                            time: timeController.text.trim(),
+                            endTime: endTimeController.text.trim(),
+                            title: titleController.text.trim(),
+                            description: descController.text.trim(),
+                            category: category,
+                          ),
+                        );
+                      }
+                      curr = curr.add(const Duration(days: 1));
+                    }
+
+                    if (recurringItems.isNotEmpty) {
+                      hunter.addScheduleItems(recurringItems);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            backgroundColor: SystemTheme.surfaceElevated,
+                            content: Text(
+                              'Created ${recurringItems.length} recurring blocks for ${chosenDate.year}!',
+                              style: const TextStyle(
+                                  color: SystemTheme.primaryCyan,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        );
+                      }
+                    }
+
+                    setState(() {
+                      _selectedDate = chosenDate;
+                    });
+                    if (ctx.mounted) Navigator.pop(ctx);
+                  }
                 } else {
-                  // Add new
+                  // Single item creation
                   final newItem = ScheduleItem(
                     id: const Uuid().v4(),
                     date: chosenDateStr,
@@ -930,12 +1155,11 @@ class _TimetableScreenState extends State<TimetableScreen> {
                     category: category,
                   );
                   hunter.addScheduleItem(newItem);
+                  setState(() {
+                    _selectedDate = chosenDate;
+                  });
+                  Navigator.pop(ctx);
                 }
-
-                setState(() {
-                  _selectedDate = chosenDate;
-                });
-                Navigator.pop(ctx);
               },
               child: Text(
                 existingItem != null ? 'UPDATE' : 'SAVE',
@@ -943,6 +1167,39 @@ class _TimetableScreenState extends State<TimetableScreen> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDayChip(
+    String label,
+    int dayNum,
+    Set<int> selectedDays,
+    Function(int) onToggle,
+  ) {
+    final isSelected = selectedDays.contains(dayNum);
+    return GestureDetector(
+      onTap: () => onToggle(dayNum),
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: isSelected ? SystemTheme.primaryCyan : SystemTheme.surface,
+          border: Border.all(
+            color: isSelected ? SystemTheme.primaryCyan : SystemTheme.border,
+            width: isSelected ? 1.5 : 1.0,
+          ),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.black : SystemTheme.textSecondary,
+            fontWeight: FontWeight.bold,
+            fontSize: 12,
+          ),
         ),
       ),
     );
