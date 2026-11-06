@@ -17,12 +17,17 @@ workflows:
       - name: Build Android APK
         script: |
           flutter build apk --release
-      - name: Build iOS (No codesign)
+      - name: Build iOS and package IPA
         script: |
           flutter build ios --release --no-codesign
+          cd build/ios/iphoneos
+          mkdir -p Payload
+          cp -r Runner.app Payload/
+          zip -r -y SoloLevelling.ipa Payload
+          mv SoloLevelling.ipa $CM_BUILD_DIR/
     artifacts:
+      - SoloLevelling.ipa
       - build/**/outputs/**/*.apk
-      - build/ios/iphoneos/*.app
     publishing:
       email:
         recipients:
