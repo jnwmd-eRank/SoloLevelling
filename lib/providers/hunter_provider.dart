@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/hunter_profile.dart';
 import '../models/quest.dart';
@@ -10,6 +12,8 @@ class HunterProvider extends ChangeNotifier {
   List<Quest> _quests = [];
   List<ScheduleItem> _scheduleItems = [];
   bool _isLoading = true;
+  String _lastResetDate = '';
+  Timer? _dailyCheckTimer;
 
   HunterProfile get profile => _profile;
   List<Quest> get quests => _quests;
@@ -26,6 +30,15 @@ class HunterProvider extends ChangeNotifier {
 
   HunterProvider() {
     loadData();
+    // Periodically check if midnight (12:00 AM) rolled over to reset quests
+    _dailyCheckTimer =
+        Timer.periodic(const Duration(minutes: 1), (_) => checkDailyQuestReset());
+  }
+
+  @override
+  void dispose() {
+    _dailyCheckTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> loadData() async {
@@ -57,6 +70,10 @@ class HunterProvider extends ChangeNotifier {
       } else {
         _scheduleItems = _getDefaultSchedule();
       }
+
+      _lastResetDate =
+          prefs.getString('hunter_last_quest_reset_date') ?? '';
+      checkDailyQuestReset();
     } catch (e) {
       if (kDebugMode) print('Error loading data: $e');
       _quests = _getDefaultQuests();
@@ -65,6 +82,23 @@ class HunterProvider extends ChangeNotifier {
 
     _isLoading = false;
     notifyListeners();
+  }
+
+  void checkDailyQuestReset() {
+    final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    if (_lastResetDate.isNotEmpty && _lastResetDate != todayStr) {
+      // 12:00 AM midnight rollover: un-tick and refresh daily quests for the new day
+      for (final quest in _quests) {
+        quest.isCompleted = false;
+        quest.currentProgress = 0;
+      }
+      _lastResetDate = todayStr;
+      saveData();
+      notifyListeners();
+    } else if (_lastResetDate.isEmpty) {
+      _lastResetDate = todayStr;
+      saveData();
+    }
   }
 
   Future<void> saveData() async {
@@ -78,6 +112,8 @@ class HunterProvider extends ChangeNotifier {
       await prefs.setString(
           'hunter_schedule',
           jsonEncode(_scheduleItems.map((s) => s.toJson()).toList()));
+      await prefs.setString(
+          'hunter_last_quest_reset_date', _lastResetDate);
     } catch (e) {
       if (kDebugMode) print('Error saving data: $e');
     }
@@ -112,7 +148,10 @@ class HunterProvider extends ChangeNotifier {
         leveledUp = addXp(quest.xpReward);
       } else {
         quest.currentProgress = 0;
-        _profile.currentXp = (_profile.currentXp - quest.xpReward).clamp(0, 999999);
+        _profile.completedQuestsCount =
+            (_profile.completedQuestsCount - 1).clamp(0, 999999);
+        _profile.currentXp =
+            (_profile.currentXp - quest.xpReward).clamp(0, 999999);
       }
 
       saveData();
@@ -135,6 +174,10 @@ class HunterProvider extends ChangeNotifier {
         addXp(quest.xpReward);
       } else if (quest.currentProgress < quest.targetProgress && quest.isCompleted) {
         quest.isCompleted = false;
+        _profile.completedQuestsCount =
+            (_profile.completedQuestsCount - 1).clamp(0, 999999);
+        _profile.currentXp =
+            (_profile.currentXp - quest.xpReward).clamp(0, 999999);
       }
 
       saveData();

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:percent_indicator/percent_indicator.dart';
 import 'package:provider/provider.dart';
 import '../providers/hunter_provider.dart';
 import '../theme/system_theme.dart';
@@ -99,8 +100,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       _buildInfoColumn('QUESTS CLEARED',
                           '${profile.completedQuestsCount}'),
-                      _buildInfoColumn('NEXT LEVEL',
-                          '${profile.xpToNextLevel - profile.currentXp} XP'),
+                      _buildInfoColumn('STATUS', 'Active Hunter'),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Experience Progress Bar and 0/200XP
+                  const Text(
+                    'EXPERIENCE PROGRESS',
+                    style: TextStyle(
+                      color: SystemTheme.textMuted,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  LinearPercentIndicator(
+                    lineHeight: 10.0,
+                    percent: profile.xpProgress,
+                    backgroundColor: SystemTheme.surfaceElevated,
+                    progressColor: SystemTheme.primaryCyan,
+                    barRadius: const Radius.circular(5),
+                    padding: EdgeInsets.zero,
+                    animation: true,
+                    animateFromLastPercent: true,
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '${(profile.xpProgress * 100).toInt()}%',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: SystemTheme.textSecondary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        '${profile.currentXp}/${profile.xpToNextLevel}XP',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: SystemTheme.primaryCyan,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
                     ],
                   ),
                   const Divider(color: SystemTheme.border, height: 28),
