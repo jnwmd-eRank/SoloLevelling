@@ -203,15 +203,27 @@ class DashboardScreen extends StatelessWidget {
           const SizedBox(height: 16),
 
           // Mini Stats Quick Bar
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildMiniStat('STR', profile.statStrength),
-              _buildMiniStat('AGI', profile.statAgility),
-              _buildMiniStat('VIT', profile.statVitality),
-              _buildMiniStat('INT', profile.statIntelligence),
-              _buildMiniStat('DISC', profile.statDiscipline),
-            ],
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _buildMiniStat('WIS', profile.statWisdom),
+                const SizedBox(width: 16),
+                _buildMiniStat('VIT', profile.statVitality),
+                const SizedBox(width: 16),
+                _buildMiniStat('AGI', profile.statAgility),
+                const SizedBox(width: 16),
+                _buildMiniStat('STR', profile.statStrength),
+                const SizedBox(width: 16),
+                _buildMiniStat('INT', profile.statIntelligence),
+                const SizedBox(width: 16),
+                _buildMiniStat('PER', profile.statPerception),
+                const SizedBox(width: 16),
+                _buildMiniStat('CHA', profile.statCharisma),
+                const SizedBox(width: 16),
+                _buildMiniStat('DEX', profile.statDexterity),
+              ],
+            ),
           ),
           if (profile.unassignedPoints > 0) ...[
             const SizedBox(height: 12),

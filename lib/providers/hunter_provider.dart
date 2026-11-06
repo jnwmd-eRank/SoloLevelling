@@ -183,20 +183,37 @@ class HunterProvider extends ChangeNotifier {
     if (_profile.unassignedPoints <= 0) return false;
 
     switch (statName.toLowerCase()) {
-      case 'strength':
-        _profile.statStrength += 1;
-        break;
-      case 'agility':
-        _profile.statAgility += 1;
+      case 'wisdom':
+      case 'wis':
+        _profile.statWisdom += 1;
         break;
       case 'vitality':
+      case 'vit':
         _profile.statVitality += 1;
         break;
+      case 'agility':
+      case 'agi':
+        _profile.statAgility += 1;
+        break;
+      case 'strength':
+      case 'str':
+        _profile.statStrength += 1;
+        break;
       case 'intelligence':
+      case 'int':
         _profile.statIntelligence += 1;
         break;
-      case 'discipline':
-        _profile.statDiscipline += 1;
+      case 'perception':
+      case 'per':
+        _profile.statPerception += 1;
+        break;
+      case 'charisma':
+      case 'cha':
+        _profile.statCharisma += 1;
+        break;
+      case 'dexterity':
+      case 'dex':
+        _profile.statDexterity += 1;
         break;
       default:
         return false;

@@ -3,11 +3,14 @@ class HunterProfile {
   String title;
   int level;
   int currentXp;
-  int statStrength;
-  int statAgility;
+  int statWisdom;
   int statVitality;
+  int statAgility;
+  int statStrength;
   int statIntelligence;
-  int statDiscipline;
+  int statPerception;
+  int statCharisma;
+  int statDexterity;
   int unassignedPoints;
   int currentStreak;
   int completedQuestsCount;
@@ -17,11 +20,14 @@ class HunterProfile {
     this.title = 'The Awakened',
     this.level = 1,
     this.currentXp = 0,
-    this.statStrength = 10,
-    this.statAgility = 10,
+    this.statWisdom = 10,
     this.statVitality = 10,
+    this.statAgility = 10,
+    this.statStrength = 10,
     this.statIntelligence = 10,
-    this.statDiscipline = 10,
+    this.statPerception = 10,
+    this.statCharisma = 10,
+    this.statDexterity = 10,
     this.unassignedPoints = 3,
     this.currentStreak = 1,
     this.completedQuestsCount = 0,
@@ -47,11 +53,14 @@ class HunterProfile {
       'title': title,
       'level': level,
       'currentXp': currentXp,
-      'statStrength': statStrength,
-      'statAgility': statAgility,
+      'statWisdom': statWisdom,
       'statVitality': statVitality,
+      'statAgility': statAgility,
+      'statStrength': statStrength,
       'statIntelligence': statIntelligence,
-      'statDiscipline': statDiscipline,
+      'statPerception': statPerception,
+      'statCharisma': statCharisma,
+      'statDexterity': statDexterity,
       'unassignedPoints': unassignedPoints,
       'currentStreak': currentStreak,
       'completedQuestsCount': completedQuestsCount,
@@ -64,11 +73,14 @@ class HunterProfile {
       title: (json['title'] ?? 'The Awakened') as String,
       level: (json['level'] ?? 1) as int,
       currentXp: (json['currentXp'] ?? 0) as int,
-      statStrength: (json['statStrength'] ?? 10) as int,
-      statAgility: (json['statAgility'] ?? 10) as int,
+      statWisdom: (json['statWisdom'] ?? 10) as int,
       statVitality: (json['statVitality'] ?? 10) as int,
+      statAgility: (json['statAgility'] ?? 10) as int,
+      statStrength: (json['statStrength'] ?? 10) as int,
       statIntelligence: (json['statIntelligence'] ?? 10) as int,
-      statDiscipline: (json['statDiscipline'] ?? 10) as int,
+      statPerception: (json['statPerception'] ?? 10) as int,
+      statCharisma: (json['statCharisma'] ?? 10) as int,
+      statDexterity: (json['statDexterity'] ?? 10) as int,
       unassignedPoints: (json['unassignedPoints'] ?? 3) as int,
       currentStreak: (json['currentStreak'] ?? 1) as int,
       completedQuestsCount: (json['completedQuestsCount'] ?? 0) as int,
