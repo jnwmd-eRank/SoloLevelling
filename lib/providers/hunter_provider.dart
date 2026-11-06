@@ -168,9 +168,31 @@ class HunterProvider extends ChangeNotifier {
 
   void addScheduleItem(ScheduleItem item) {
     _scheduleItems.add(item);
-    _scheduleItems.sort((a, b) => a.time.compareTo(b.time));
+    _scheduleItems.sort((a, b) {
+      final dateCompare = a.date.compareTo(b.date);
+      if (dateCompare != 0) return dateCompare;
+      return a.time.compareTo(b.time);
+    });
     saveData();
     notifyListeners();
+  }
+
+  void updateScheduleItem(ScheduleItem updatedItem) {
+    final index = _scheduleItems.indexWhere((s) => s.id == updatedItem.id);
+    if (index != -1) {
+      _scheduleItems[index] = updatedItem;
+      _scheduleItems.sort((a, b) {
+        final dateCompare = a.date.compareTo(b.date);
+        if (dateCompare != 0) return dateCompare;
+        return a.time.compareTo(b.time);
+      });
+      saveData();
+      notifyListeners();
+    }
+  }
+
+  List<ScheduleItem> getScheduleForDate(String date) {
+    return _scheduleItems.where((s) => s.date == date).toList();
   }
 
   void deleteScheduleItem(String id) {

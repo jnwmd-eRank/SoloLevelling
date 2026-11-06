@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import '../providers/hunter_provider.dart';
@@ -469,7 +470,11 @@ class DashboardScreen extends StatelessWidget {
 
   Widget _buildUpcomingSchedule(
       BuildContext context, HunterProvider hunter) {
-    final items = hunter.scheduleItems.take(3).toList();
+    final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final todayItems =
+        hunter.scheduleItems.where((i) => i.date == todayStr).take(3).toList();
+    final items =
+        todayItems.isNotEmpty ? todayItems : hunter.scheduleItems.take(3).toList();
 
     return Container(
       padding: const EdgeInsets.all(16),
