@@ -298,12 +298,21 @@ class HunterProvider extends ChangeNotifier {
       ),
       Quest(
         id: 'quest_reading',
-        title: 'Mental Cultivation: Read 20 Mins',
+        title: 'Career & Growth: Read 20 Mins',
         description: 'Expand knowledge through focused book reading.',
-        category: 'focus',
+        category: 'work',
         xpReward: 50,
         targetProgress: 20,
         unit: 'mins',
+      ),
+      Quest(
+        id: 'quest_faith',
+        title: 'Spirituality: Prayer & Reflection',
+        description: 'Quiet time, prayer, and daily spiritual meditation.',
+        category: 'faith',
+        xpReward: 50,
+        targetProgress: 1,
+        unit: 'session',
       ),
       Quest(
         id: 'quest_water',

@@ -22,7 +22,11 @@ class _QuestsScreenState extends State<QuestsScreen> {
     final allQuests = hunter.quests;
     final filteredQuests = _selectedCategory == 'all'
         ? allQuests
-        : allQuests.where((q) => q.category == _selectedCategory).toList();
+        : allQuests
+            .where((q) =>
+                q.category == _selectedCategory ||
+                (_selectedCategory == 'work' && q.category == 'focus'))
+            .toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -55,9 +59,11 @@ class _QuestsScreenState extends State<QuestsScreen> {
                   const SizedBox(width: 8),
                   _buildFilterChip('fitness', 'FITNESS'),
                   const SizedBox(width: 8),
-                  _buildFilterChip('focus', 'FOCUS / STUDY'),
-                  const SizedBox(width: 8),
                   _buildFilterChip('habits', 'DAILY HABITS'),
+                  const SizedBox(width: 8),
+                  _buildFilterChip('work', 'WORK / STUDY'),
+                  const SizedBox(width: 8),
+                  _buildFilterChip('faith', 'FAITH'),
                 ],
               ),
             ),
@@ -447,9 +453,10 @@ class _QuestsScreenState extends State<QuestsScreen> {
                   items: const [
                     DropdownMenuItem(value: 'fitness', child: Text('Fitness')),
                     DropdownMenuItem(
-                        value: 'focus', child: Text('Focus / Study')),
-                    DropdownMenuItem(
                         value: 'habits', child: Text('Daily Habits')),
+                    DropdownMenuItem(
+                        value: 'work', child: Text('Work / Study')),
+                    DropdownMenuItem(value: 'faith', child: Text('Faith')),
                   ],
                   onChanged: (val) {
                     if (val != null) setModalState(() => category = val);
