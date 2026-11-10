@@ -12,10 +12,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  bool _morningAlert = true;
-  bool _workoutAlert = true;
-  bool _eveningAlert = true;
-
   @override
   Widget build(BuildContext context) {
     final hunter = context.watch<HunterProvider>();
@@ -276,52 +272,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 24),
 
-            // --- NOTIFICATIONS & REMINDERS SETTINGS ---
+            // --- SCHEDULE ALERTS NOTICE ---
             Container(
               padding: const EdgeInsets.all(16),
               decoration: SystemTheme.hudCardDecoration(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: const Row(
                 children: [
-                  const Row(
-                    children: [
-                      Icon(Icons.notifications_active_outlined,
-                          color: SystemTheme.primaryCyan, size: 20),
-                      SizedBox(width: 8),
-                      Text(
-                        'DAILY NOTIFICATION ALERTS',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.0,
+                  Icon(Icons.notifications_active_outlined,
+                      color: SystemTheme.primaryCyan, size: 22),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'SCHEDULE ALERTS ACTIVE',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.8,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Automated System reminders to keep your streak alive.',
-                    style: TextStyle(color: SystemTheme.textMuted, fontSize: 12),
-                  ),
-                  const SizedBox(height: 12),
-
-                  _buildSwitchTile(
-                    title: 'Morning Awakening (07:00)',
-                    subtitle: 'Daily quest checklist & hydration alert',
-                    value: _morningAlert,
-                    onChanged: (val) => setState(() => _morningAlert = val),
-                  ),
-                  _buildSwitchTile(
-                    title: 'Dungeon Workout Prompt (17:00)',
-                    subtitle: 'Reminder for physical workout & training timer',
-                    value: _workoutAlert,
-                    onChanged: (val) => setState(() => _workoutAlert = val),
-                  ),
-                  _buildSwitchTile(
-                    title: 'Evening Debrief (21:30)',
-                    subtitle: 'Review remaining daily quests before day resets',
-                    value: _eveningAlert,
-                    onChanged: (val) => setState(() => _eveningAlert = val),
+                        SizedBox(height: 3),
+                        Text(
+                          'The System delivers alerts for every scheduled activity. Manage banner and sound preferences in device Settings.',
+                          style: TextStyle(
+                            color: SystemTheme.textMuted,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -435,37 +417,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildSwitchTile({
-    required String title,
-    required String subtitle,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: SwitchListTile(
-        contentPadding: EdgeInsets.zero,
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: const TextStyle(
-            fontSize: 11,
-            color: SystemTheme.textMuted,
-          ),
-        ),
-        value: value,
-        activeTrackColor: SystemTheme.primaryCyan,
-        onChanged: onChanged,
-      ),
-    );
-  }
+
 
   void _showEditNameDialog(BuildContext context, HunterProvider hunter) {
     final controller =

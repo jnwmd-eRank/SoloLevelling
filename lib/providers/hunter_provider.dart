@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/hunter_profile.dart';
 import '../models/quest.dart';
 import '../models/schedule_item.dart';
+import '../services/notification_service.dart';
 
 class HunterProvider extends ChangeNotifier {
   HunterProfile _profile = HunterProfile();
@@ -79,6 +80,8 @@ class HunterProvider extends ChangeNotifier {
       _quests = _getDefaultQuests();
       _scheduleItems = _getDefaultSchedule();
     }
+
+    NotificationService().syncAllScheduleNotifications(_scheduleItems);
 
     _isLoading = false;
     notifyListeners();
@@ -203,6 +206,9 @@ class HunterProvider extends ChangeNotifier {
       _scheduleItems[index].isCompleted = !_scheduleItems[index].isCompleted;
       if (_scheduleItems[index].isCompleted) {
         addXp(20);
+        NotificationService().cancelItemNotification(id);
+      } else {
+        NotificationService().scheduleItemNotification(_scheduleItems[index]);
       }
       saveData();
       notifyListeners();
@@ -216,6 +222,7 @@ class HunterProvider extends ChangeNotifier {
       if (dateCompare != 0) return dateCompare;
       return a.time.compareTo(b.time);
     });
+    NotificationService().scheduleItemNotification(item);
     saveData();
     notifyListeners();
   }
@@ -227,6 +234,9 @@ class HunterProvider extends ChangeNotifier {
       if (dateCompare != 0) return dateCompare;
       return a.time.compareTo(b.time);
     });
+    for (final item in items) {
+      NotificationService().scheduleItemNotification(item);
+    }
     saveData();
     notifyListeners();
   }
@@ -240,6 +250,8 @@ class HunterProvider extends ChangeNotifier {
         if (dateCompare != 0) return dateCompare;
         return a.time.compareTo(b.time);
       });
+      NotificationService().cancelItemNotification(updatedItem.id);
+      NotificationService().scheduleItemNotification(updatedItem);
       saveData();
       notifyListeners();
     }
@@ -251,6 +263,7 @@ class HunterProvider extends ChangeNotifier {
 
   void deleteScheduleItem(String id) {
     _scheduleItems.removeWhere((s) => s.id == id);
+    NotificationService().cancelItemNotification(id);
     saveData();
     notifyListeners();
   }
