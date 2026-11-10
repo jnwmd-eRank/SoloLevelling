@@ -36,7 +36,7 @@ class NotificationService {
       iOS: iosSettings,
     );
 
-    await _notificationsPlugin.initialize(settings: initSettings);
+    await _notificationsPlugin.initialize(initSettings);
 
     // Request permissions explicitly for iOS & Android 13+
     await requestPermissions();
@@ -47,9 +47,9 @@ class NotificationService {
   void _configureLocalTimeZone() {
     try {
       final now = DateTime.now();
-      final targetOffset = now.timeZoneOffset;
+      final targetOffsetMs = now.timeZoneOffset.inMilliseconds;
       for (final entry in tz.timeZoneDatabase.locations.entries) {
-        if (entry.value.currentTimeZone.offset == targetOffset) {
+        if (entry.value.currentTimeZone.offset == targetOffsetMs) {
           tz.setLocalLocation(entry.value);
           return;
         }
@@ -116,12 +116,14 @@ class NotificationService {
           : 'Scheduled activity starting at ${item.time}';
 
       await _notificationsPlugin.zonedSchedule(
-        id: id,
-        title: 'SYSTEM: ${item.title}',
-        body: bodyText,
-        scheduledDate: tzDateTime,
-        notificationDetails: details,
+        id,
+        'SYSTEM: ${item.title}',
+        bodyText,
+        tzDateTime,
+        details,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
       );
     } catch (e) {
       if (kDebugMode) print('Failed to schedule notification: $e');
@@ -131,7 +133,7 @@ class NotificationService {
   Future<void> cancelItemNotification(String itemId) async {
     try {
       final id = _getNotificationId(itemId);
-      await _notificationsPlugin.cancel(id: id);
+      await _notificationsPlugin.cancel(id);
     } catch (e) {
       if (kDebugMode) print('Failed to cancel notification: $e');
     }
